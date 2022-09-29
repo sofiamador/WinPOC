@@ -44,23 +44,34 @@ class Line(object):
         self.volume = volume
         self.importance = importance
 
+def calc_total_volume(lines):
+    sum_volume = 0
+    for line in lines:
+        sum_volume = sum_volume + line.volume
+    return sum_volume
+
+def calc_total_quantity(lines):
+    sum_quantity = 0
+    for line in lines:
+        sum_quantity = sum_quantity + line.quantity
+    return sum_quantity
 
 class Order:
     def __init__(self, id_, lines):
-        self.lines = []
+        self.lines = lines
         self.id_ = id_
         self.importance = lines[0].importance
-        self.total_volume = 0
-        self.numner_of_
+        self.total_volume = calc_total_volume(lines)
+        self.number_of_lines = len(lines)
 
 
 class GroupOfItem():
-    def __init__(self, item_id, importance, lines):
-        self.lines = []
+    def __init__(self, item_id, lines):
+        self.lines = lines
         self.item_id = item_id
-        self.importance = 1
-        self.total_quantity = 0
-        self.total_volume = 0
+        self.importance = 1 # data not avaliable
+        self.total_quantity = calc_total_quantity(lines)
+        self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)  # number of distinct orders
 
 
