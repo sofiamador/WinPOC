@@ -45,13 +45,23 @@ class Line(object):
         self.importance = importance
 
 
-
 class Order:
-    def __init__(self, id_, priority, lines):
+    def __init__(self, id_, lines):
         self.lines = []
         self.id_ = id_
-        self.priority = 1
+        self.importance = lines[0].importance
         self.total_volume = 0
+        self.numner_of_
+
+
+class GroupOfItem():
+    def __init__(self, item_id, importance, lines):
+        self.lines = []
+        self.item_id = item_id
+        self.importance = 1
+        self.total_quantity = 0
+        self.total_volume = 0
+        self.number_of_lines = len(lines)  # number of distinct orders
 
 
 class Task:
@@ -61,6 +71,7 @@ class Task:
         self.lines = []
         self.type_ = type_
         self.priority = 1
+        self.number_of_lines = 0
         self.total_quantity = 0
         self.total_volume = 0
         self.number_of_agents_required = 1

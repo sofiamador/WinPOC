@@ -19,25 +19,21 @@ def choose_records(data_, field_name, value):
     return data_2
 
 
-def create_lines_and_classify_by_item(dic_items_with_volume, lines_input_):
-    lines_by_items = {}
-
+def create_lines(dic_items_with_volume, lines_input_):
+    lines = []
     for ind in lines_input_.index:
         order_id = lines_input_['הזמנה'][ind]
         item_id = lines_input_['מקט'][ind]
         quantity = int(lines_input_['כמות מתוכננת'][ind])
         is_to_price = lines_input_['הערה'][ind] == "תמחור"
         location = lines_input_['מאיתור'][ind]
+        importance = lines_input_['עדיפות'][ind]
         volume = quantity * dic_items_with_volume.get(item_id,0)
         line = Line(order_id=order_id, quantity=quantity, is_to_price=is_to_price, location_string=location,
                     volume=volume,
-                    item_id=item_id)
-        if item_id in lines_by_items:
-            lines_by_items[item_id].append(line)
-        else:
-            lst = [line]
-            lines_by_items[item_id] = lst
-    return lines_by_items
+                    item_id=item_id,importance=importance)
+        lines.append(line)
+    return lines
 
 
 def create_dict_of_items(items_input_):
@@ -58,7 +54,8 @@ lines_input = read_input("input.xlsx")
 #print(lines_input.info)
 date = "2022-06-19 00:00:00"
 lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
+lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
 #print(lines_input2.info)
-group_data = lines_input2.groupby(["מקט"],sort=True)["מקט"].count()
-#lines_by_item = create_lines_and_classify_by_item(dic_items_with_volume, lines_input2)
+group_data = lines_input3.groupby(["מקט"],sort=True)["מקט"].count()
+lines = create_lines(dic_items_with_volume, lines_input3)
 print(group_data)
