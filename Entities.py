@@ -4,11 +4,12 @@ class Location():
         self.warehouse_id = "M"
         if len(loc) > 2 and (loc[2] == "-" or loc[1] == "-"):
             l = loc.split("-")
-            self.aisle = l[0]
+            self.aisle1 = l[0]
             self.column = int(l[1])
             self.row = int(l[2])
         else:
-            self.aisle = loc[0:2]
+            self.aisle1 = loc[0]
+            self.aisle2 = loc[1]
             if len(loc) > 2:
                 self.column = int(loc[2])
             else:
@@ -72,7 +73,10 @@ class GroupOfItem():
         self.importance = 1 # data not avaliable
         self.total_quantity = calc_total_quantity(lines)
         self.total_volume = calc_total_volume(lines)
-        self.number_of_lines = len(lines)  # number of distinct orders
+        self.number_of_lines = len(lines)  # number of distinct orders\
+
+    def __str__(self):
+        return str(self.item_id)+ "  "+ str(self.number_of_lines)
 
 
 class Task:

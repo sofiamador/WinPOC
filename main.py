@@ -28,10 +28,10 @@ def create_lines(dic_items_with_volume, lines_input_):
         is_to_price = lines_input_['הערה'][ind] == "תמחור"
         location = lines_input_['מאיתור'][ind]
         importance = lines_input_['עדיפות'][ind]
-        volume = quantity * dic_items_with_volume.get(item_id,0)
+        volume = quantity * dic_items_with_volume.get(item_id, 0)
         line = Line(order_id=order_id, quantity=quantity, is_to_price=is_to_price, location_string=location,
                     volume=volume,
-                    item_id=item_id,importance=importance)
+                    item_id=item_id, importance=importance)
         lines.append(line)
     return lines
 
@@ -44,8 +44,10 @@ def create_dict_of_items(items_input_):
         dic_[item_id] = volume
     return dic_
 
+
 def gropup_by_column(lines_input2, column_name):
     pass
+
 
 def get_lines_by_order(lines):
     dict_ = {}
@@ -58,7 +60,7 @@ def get_lines_by_order(lines):
     ans = []
     counter = 0
     for line_list in dict_.values():
-        ans.append(Order(id_ = counter, lines=line_list))
+        ans.append(Order(id_=counter, lines=line_list))
 
     return ans
 
@@ -81,15 +83,16 @@ def get_lines_by_item(lines):
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
 lines_input = read_input("input.xlsx")
-#print(lines_input.info)
+# print(lines_input.info)
 date = "2022-06-19 00:00:00"
 lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
-lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
-#print(lines_input2.info)
-group_data = lines_input3.groupby(["מקט"],sort=True)["מקט"].count()
+lines_input3 = choose_records(lines_input2, field_name="אזור במחסן", value="M")
+# print(lines_input2.info)
+group_data = lines_input3.groupby(["מקט"], sort=True)["מקט"].count()
 lines = create_lines(dic_items_with_volume, lines_input3)
 
 orders = get_lines_by_order(lines)
-item_groups = get_lines_by_item(lines)
+item_groups = sorted(get_lines_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
 
-print(group_data)
+
+print(item_groups)
