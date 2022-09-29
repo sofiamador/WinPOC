@@ -9,7 +9,8 @@ class Location():
             self.row = int(l[2])
         else:
             self.aisle1 = loc[0]
-            self.aisle2 = loc[1]
+            if len(loc) > 2:
+                self.aisle2 = loc[1]
             if len(loc) > 2:
                 self.column = int(loc[2])
             else:
