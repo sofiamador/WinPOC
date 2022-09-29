@@ -74,6 +74,8 @@ class GroupOfItem():
         self.total_quantity = calc_total_quantity(lines)
         self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)  # number of distinct orders\
+        self.location = lines[0].location
+        self.aisle1 = lines[0].location.aisle1
 
     def __str__(self):
         return str(self.item_id)+ "  "+ str(self.number_of_lines)
