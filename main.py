@@ -79,14 +79,27 @@ def get_lines_by_item(lines):
 
     return ans
 
+def create_files_by_date(df):
+    dates = df["תאריך"].unique()
+    for date in dates:
+        df_for_date  = df[df["תאריך"] == date]
+        date_no_time = date.split(" ")[0]
+        df_for_date.to_excel("input_"+date_no_time+".xlsx", sheet_name=date_no_time)
+
+
 
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
-lines_input = read_input("input.xlsx")
+#lines_input = read_input("input.xlsx")
+#create_files_by_date(lines_input)
+
+
 # print(lines_input.info)
-date = "2022-06-19 00:00:00"
-lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
-lines_input3 = choose_records(lines_input2, field_name="אזור במחסן", value="M")
+date = "2022-06-19"
+lines_input = read_input("input_"+date+".xlsx")
+
+#lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
+lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
 # print(lines_input2.info)
 group_data = lines_input3.groupby(["מקט"], sort=True)["מקט"].count()
 lines = create_lines(dic_items_with_volume, lines_input3)
