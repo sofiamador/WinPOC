@@ -1,7 +1,7 @@
 class Location():
     def __init__(self, loc):
         self.loc_str = loc
-        self.area = "M"
+        self.warehouse_id = "M"
         if len(loc) > 2 and (loc[2] == "-" or loc[1] == "-"):
             l = loc.split("-")
             self.aisle = l[0]
@@ -25,38 +25,33 @@ class Location():
 
 class Line(object):
 
-    def __init__(self, type_, order_id, inside_order_id, catalog_number, barcode, quantity, warehouse_id, route,
-                 is_to_price, package_type, location_string, customer_id):
+    def __init__(self, order_id, item_id, quantity, is_to_price, location_string, importance=0, volume=0):
         """
 
-        :param type_: the type of the order
         :param order_id: order_id that the line belongs to
-        :param inside_order_id: order id inside the warehouse
-        :param catalog_number:
-        :param barcode:
+        :param item_id:
         :param quantity:
-        :param warehouse_id:
-        :param route: the route of the order (1-9)
         :param is_to_price: should price be added to the product
-        :param package_type: [2,3,5,8]
-        :param location: full location of the product in the warehouse
-        :param row_location: only the row whre the product is located
-        :param customer_id: customer id that the line belongs to
+        :param location_string: full location of the product in the warehouse
+        :param importance:
+        :param volume: the volume of the products in this line
         """
-        self.customer_id = customer_id
         self.location = Location(loc=location_string)
-        self.route = route
-        self.warehouse_id = warehouse_id
         self.quantity = quantity
-        self.barcode = barcode
-        self.catalog_number = catalog_number
-        self.inside_order_id = inside_order_id
+        self.item_id = item_id
         self.order_id = order_id
-        self.type_ = type_
         self.is_to_price = is_to_price
-        self.package_type = package_type
-        self.volume = None
-        self.importance = 1
+        self.volume = volume
+        self.importance = importance
+
+
+
+class Order:
+    def __init__(self, id_, priority, lines):
+        self.lines = []
+        self.id_ = id_
+        self.priority = 1
+        self.total_volume = 0
 
 
 class Task:
@@ -76,13 +71,12 @@ class Task:
 
 class Employee():
 
-    def __init__(self,id_, name, location, abilities):
+    def __init__(self, id_, name, location, abilities):
         self.abilities = abilities
         self.location = location
         self.name = name
         self.id_ = id_
 
 
-
-def calc_distance(location1,location2):
+def calc_distance(location1, location2):
     pass
