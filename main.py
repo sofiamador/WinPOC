@@ -1,6 +1,6 @@
 import pandas as pd
 
-from Entities import Line, Task, GroupOfItem, Order, GroupByIsle
+from Entities import Line, Task, GroupOfItem, Order, GroupByIsle, TaskTransfer
 
 
 # def get_ailse_name(row):
@@ -168,15 +168,57 @@ def get_sorted_value_list_by_volume(dict_by_aisle_connection):
         ans[k] = sorted(v, key=lambda x: x.total_volume, reverse=True)
     return ans
 
+
+def get_transfer_groups_per_aisle(dict_sorted_value_by_volume,max_items_per_group,max_volume):
+    ans = {}
+    for k,v in dict_sorted_value_by_volume.items():
+        ans[k] = []
+        counter = max_items_per_group
+        volume_sum = 0
+        grouped_items_for_task = []
+
+        for item_group in v:
+
+            if volume_sum+item_group.total_volume>max_volume or counter == 0:
+                ans[k].append(TaskTransfer(grouped_items_for_task,k))
+                counter = max_items_per_group-1
+                volume_sum = item_group.total_volume
+                grouped_items_for_task = [item_group]
+
+            else:
+                counter = counter-1
+                volume_sum = volume_sum+item_group.total_volume
+                grouped_items_for_task.append(item_group)
+
+
+        if len(grouped_items_for_task)!=0:
+            ans[k].append(TaskTransfer(grouped_items_for_task,k))
+    return ans
+
+
+def get_transfer_groups_list(transfer_groups_per_aisle):
+    ans = []
+    for v in transfer_groups_per_aisle.values():
+        for task in v:
+            ans.append(task)
+    return ans
+
+
 def get_item_groups_by_aisle(item_groups, max_items_per_group, max_transfer_task,max_volume):
     dict_by_aisle = get_dict_by_aisle(item_groups)
     aisle_couples = get_aisle_couples()
     dict_by_aisle_connection = get_dict_by_aisle_connection(dict_by_aisle,aisle_couples)
     dict_sorted_value_by_volume = get_sorted_value_list_by_volume(dict_by_aisle_connection)
-    create_transfer_groups_per_aisle = get_transfer_groups_per_aisle(dict_sorted_value_by_volume)
-
-
-
+    transfer_groups_per_aisle = get_transfer_groups_per_aisle(dict_sorted_value_by_volume,max_items_per_group,max_volume)
+    transfer_groups_list = get_transfer_groups_list(transfer_groups_per_aisle)
+    transfer_groups_list_sorted = sorted(transfer_groups_list, key=lambda x: x.total_volume, reverse=True)
+    ans = []
+    for transfer_task in transfer_groups_list_sorted:
+        ans.append(transfer_task)
+        max_transfer_task = max_transfer_task-1
+        if max_transfer_task == 0:
+            break
+    return ans
 
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
@@ -197,7 +239,7 @@ item_groups = get_lines_by_item(lines)
 
 
 #sorted(get_lines_by_item(lines), key=lambda x: x.total_volume, reverse=True)
-item_groups_by_aisle = get_item_groups_by_aisle(item_groups = item_groups, max_items_per_group = 4,
+transfer_tasks = get_item_groups_by_aisle(item_groups = item_groups, max_items_per_group = 4,
                                                max_transfer_task = 5,max_volume = 1.728)
 #isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
 

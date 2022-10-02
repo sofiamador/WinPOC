@@ -52,11 +52,29 @@ def calc_total_volume(lines):
         sum_volume = sum_volume + line.volume
     return sum_volume
 
+
+
+def calc_total_volume_of_grouped_items(grouped_items):
+    sum_volume = 0
+    for grouped in grouped_items:
+        sum_volume = sum_volume + grouped.total_volume
+    return sum_volume
+
 def calc_total_quantity(lines):
     sum_quantity = 0
     for line in lines:
         sum_quantity = sum_quantity + line.quantity
     return sum_quantity
+
+
+class TaskTransfer:
+    def __init__(self,  grouped_items, aisles):
+        self.aisles = aisles
+        self.grouped_items = grouped_items
+        self.total_volume = calc_total_volume_of_grouped_items(grouped_items)
+
+    def __str__(self):
+        return str(self.aisles)+ "  "+ str(self.total_volume)
 
 class Order:
     def __init__(self, id_, lines):
