@@ -73,6 +73,8 @@ class GroupByIsle:
         self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)
 
+    #def __str__(self):
+    #    return lines[0].
 class GroupOfItem():
     def __init__(self, item_id, lines):
         self.lines = lines
@@ -85,8 +87,13 @@ class GroupOfItem():
         self.aisle1 = lines[0].location.aisle1
 
     def __str__(self):
-        return str(self.item_id)+ "  "+ str(self.number_of_lines)
+        return str(self.item_id)+ "  "+ str(self.total_volume)
 
+    def __hash__(self):
+        return self.item_id
+
+    def __eq__(self, other):
+        return self.item_id == other.item_id
 
 class Task:
 

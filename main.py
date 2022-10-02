@@ -72,11 +72,9 @@ def get_lines_by_item(lines):
         if item_id not in dict_.keys():
             dict_[item_id] = []
         dict_[item_id].append(line)
-
     ans = []
     for line_list in dict_.values():
         ans.append(GroupOfItem(item_id=line_list[0].item_id, lines=line_list))
-
     return ans
 
 def get_isle_by_item(lines):
@@ -90,8 +88,8 @@ def get_isle_by_item(lines):
     ans = []
     for line_list in dict_.values():
         ans.append(GroupByIsle(isle_id=line_list[0].location.aisle1, lines=line_list))
-
     return ans
+
 def create_files_by_date(df):
     dates = df["תאריך"].unique()
     for date in dates:
@@ -99,14 +97,91 @@ def create_files_by_date(df):
         date_no_time = date.split(" ")[0]
         df_for_date.to_excel("input_"+date_no_time+".xlsx", sheet_name=date_no_time)
 
+def get_dict_by_aisle(item_groups):
+    ans = {}
+    for item_group in item_groups:
+        item_aisle = item_group.aisle1
+        if item_aisle not in ans.keys():
+            ans[item_aisle] = []
+        ans[item_aisle].append(item_group)
+    return  ans
+
+
+def get_aisle_couples():
+    return {
+        "F": "G",
+        "G": "F",
+        "H": "I",
+        "I": "H",
+        "J": "K",
+        "K": "J",
+        "L": "M",
+        "M": "L",
+        "N": "O",
+        "O": "N",
+        "P": "Q",
+        "Q": "R",
+        "R": None,
+        "S": "T",
+        "T": "S",
+        "U": "V",
+        "V": "U",
+        "W": "X",
+        "X": "W",
+        "Y": "Z",
+        "Z": "Y",
+    }
+
+
+def get_dict_by_aisle_connection(dict_by_aisle, aisle_couples):
+    aisle_used = []
+    ans = {}
+    for k,v in dict_by_aisle.items():
+        if k not in aisle_used:
+            aisle_used.append(k)
+            try:
+                aisle_connection = aisle_couples[k]
+                if aisle_connection is not None:
+                    if aisle_connection in aisle_used:
+                        raise Exception("something in manually placing couples is wrong")
+                    aisle_used.append(aisle_connection)
+                    expend_group = []
+                    for group in dict_by_aisle[k]:
+                        expend_group.append(group)
+                    for group in dict_by_aisle[aisle_connection]:
+                        expend_group.append(group)
+                    ans[k + "+" + aisle_connection] = expend_group
+                else:
+                    ans[k] = dict_by_aisle[k]
+            except:
+                ans[k] = dict_by_aisle[k]
+                print(k, "aisle not in map")
+
+
+
+    return ans
+
+
+def get_sorted_value_list_by_volume(dict_by_aisle_connection):
+    ans = {}
+    for k,v in dict_by_aisle_connection.items():
+        ans[k] = sorted(v, key=lambda x: x.total_volume, reverse=True)
+    return ans
+
+def get_item_groups_by_aisle(item_groups, max_items_per_group, max_transfer_task,max_volume):
+    dict_by_aisle = get_dict_by_aisle(item_groups)
+    aisle_couples = get_aisle_couples()
+    dict_by_aisle_connection = get_dict_by_aisle_connection(dict_by_aisle,aisle_couples)
+    dict_sorted_value_by_volume = get_sorted_value_list_by_volume(dict_by_aisle_connection)
+    create_transfer_groups_per_aisle = get_transfer_groups_per_aisle(dict_sorted_value_by_volume)
+
+
 
 
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
 #lines_input = read_input("input.xlsx")
 #create_files_by_date(lines_input)
-
-
 # print(lines_input.info)
 date = "2022-06-20"
 dir = "input_by_date/"
@@ -117,10 +192,14 @@ lines_input3 = choose_records(lines_input, field_name="אזור במחסן", val
 lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה", value="3")
 # print(lines_input2.info)
 lines = create_lines(dic_items_with_volume, lines_input4)
-
 order_groups = get_lines_by_order(lines)
-item_groups = sorted(get_lines_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
-isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
+item_groups = get_lines_by_item(lines)
+
+
+#sorted(get_lines_by_item(lines), key=lambda x: x.total_volume, reverse=True)
+item_groups_by_aisle = get_item_groups_by_aisle(item_groups = item_groups, max_items_per_group = 4,
+                                               max_transfer_task = 5,max_volume = 1.728)
+#isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
 
 
 print(item_groups)
