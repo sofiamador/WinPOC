@@ -66,6 +66,12 @@ class Order:
         self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)
 
+class GroupByIsle:
+    def __init__(self, isle_id, lines):
+        self.lines = lines
+        self.isle_id = isle_id
+        self.total_volume = calc_total_volume(lines)
+        self.number_of_lines = len(lines)
 
 class GroupOfItem():
     def __init__(self, item_id, lines):

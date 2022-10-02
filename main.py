@@ -1,6 +1,6 @@
 import pandas as pd
 
-from Entities import Line, Task, GroupOfItem, Order
+from Entities import Line, Task, GroupOfItem, Order, GroupByIsle
 
 
 # def get_ailse_name(row):
@@ -79,6 +79,19 @@ def get_lines_by_item(lines):
 
     return ans
 
+def get_isle_by_item(lines):
+    dict_ = {}
+    for line in lines:
+        aisle1 = line.location.aisle1
+        if aisle1 not in dict_.keys():
+            dict_[aisle1] = []
+        dict_[aisle1].append(line)
+
+    ans = []
+    for line_list in dict_.values():
+        ans.append(GroupByIsle(isle_id=line_list[0].location.aisle1, lines=line_list))
+
+    return ans
 def create_files_by_date(df):
     dates = df["תאריך"].unique()
     for date in dates:
@@ -96,7 +109,8 @@ dic_items_with_volume = create_dict_of_items(items_input)
 
 # print(lines_input.info)
 date = "2022-06-20"
-lines_input = read_input("input_"+date+".xlsx")
+dir = "input_by_date/"
+lines_input = read_input(dir+"input_"+date+".xlsx")
 
 #lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
 lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
@@ -104,8 +118,9 @@ lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה",
 # print(lines_input2.info)
 lines = create_lines(dic_items_with_volume, lines_input4)
 
-orders = get_lines_by_order(lines)
+order_groups = get_lines_by_order(lines)
 item_groups = sorted(get_lines_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
+isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
 
 
 print(item_groups)
