@@ -95,14 +95,14 @@ dic_items_with_volume = create_dict_of_items(items_input)
 
 
 # print(lines_input.info)
-date = "2022-06-19"
+date = "2022-06-20"
 lines_input = read_input("input_"+date+".xlsx")
 
 #lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
 lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
+lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה", value="3")
 # print(lines_input2.info)
-group_data = lines_input3.groupby(["מקט"], sort=True)["מקט"].count()
-lines = create_lines(dic_items_with_volume, lines_input3)
+lines = create_lines(dic_items_with_volume, lines_input4)
 
 orders = get_lines_by_order(lines)
 item_groups = sorted(get_lines_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
