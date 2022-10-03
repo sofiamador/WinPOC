@@ -1,6 +1,6 @@
 import pandas as pd
 
-from Entities import Line, Task, GroupOfItem, Order, GroupByIsle, TaskTransfer,Employee
+from Entities import Line, Task, GroupOfItem, Order, GroupByIsle, TaskTransfer, Employee
 
 
 # def get_ailse_name(row):
@@ -228,7 +228,7 @@ def create_employees(employees_data):
         employee_id = employees_data['שם משתמש'][ind]
         pick_grade = int(employees_data['ליקוט'][ind])
         transfer_grade = int(employees_data['העברה'][ind])
-        abilities = {"pick":pick_grade,"transfer":transfer_grade}
+        abilities = {"pick": pick_grade, "transfer": transfer_grade}
         employee = Employee(id_=employee_id, abilities=abilities)
         employees_.append(employee)
     return employees_
@@ -236,7 +236,6 @@ def create_employees(employees_data):
 
 employees_data = read_input("employees.xlsx")
 employees = create_employees(employees_data)
-
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
 # lines_input = read_input("input.xlsx")
