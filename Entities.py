@@ -74,7 +74,12 @@ class TaskTransfer:
         self.total_volume = calc_total_volume_of_grouped_items(grouped_items)
 
     def __str__(self):
-        return str(self.aisles)+ "  "+ str(self.total_volume)
+        return str(self.aisles)+ ", "+ str(self.total_volume)
+
+
+    def add_another_group(self,group):
+        self.grouped_items.append(group)
+        self.total_volume = self.total_volume + group.total_volume
 
 class Order:
     def __init__(self, id_, lines):
@@ -83,6 +88,7 @@ class Order:
         self.importance = lines[0].importance
         self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)
+        self.is_in_transfer= False
 
 class GroupByIsle:
     def __init__(self, isle_id, lines):

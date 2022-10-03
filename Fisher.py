@@ -1,12 +1,22 @@
 
 class Utility:
-    def __init__(self, util=-1,ro=1, ):
+    def __init__(self, task,employee,i,j,ro=1, ):
         self.ro = ro
-        self.linear_utility = util
+        self.task = task
+        self.employee = employee
+        self.i = i
+        self.j = j
+        self.linear_utility = self.calculate_linear_utility()
         self.xij = None
 
     def get_utility(self, ratio=1):
         return (ratio * self.linear_utility) ** self.ro
+
+    def calculate_linear_utility(self):
+        pass # TODO rij
+        # transfer>pick
+        # notice grade of employee for the type of task
+        # for transfer
 
 
 class FisherCentralizedImplementation:
@@ -145,19 +155,21 @@ class FisherCentralizedImplementation:
                     util.xij = 0
 
 class FisherForUser():
-    def __init__(self,utilities_numbers):
+    def __init__(self,tasks, employees):
         self.R_matrix =[]
-        self.set_R_matrix(utilities_numbers)
+        self.set_R_matrix(tasks, employees)
         self.fmc = FisherCentralizedImplementation(self.R_matrix)
         self.X_matrix = []
         self.create_X_matrix()
 
 
-    def set_R_matrix(self, utilities_numbers):
-        for i in range(len(utilities_numbers)):
+    def set_R_matrix(self, tasks, employees):
+
+        for i in range(len(tasks)):
             single_row = []
-            for j in  range(len(utilities_numbers[0])):
-                single_row.append(Utility(utilities_numbers[i][j]))
+            for j in range(employees):
+                util = Utility(tasks[i],employees[j],i,j)
+                single_row.append(Utility())
             self.R_matrix.append(single_row)
 
     def create_X_matrix(self):
@@ -170,6 +182,3 @@ class FisherForUser():
 def create_X_matrix (R_matrix):
     return FisherForUser(R_matrix).X_matrix
 
-if __name__ == '__main__':
-    R_m = [[123,321],[252,400]]
-    print(create_X_matrix(R_m))
