@@ -131,12 +131,13 @@ class Task:
 
 class Employee():
 
-    def __init__(self, id_, name, location, abilities):
+    def __init__(self, id_, abilities):
         self.abilities = abilities
-        self.location = location
-        self.name = name
+        #self.location = location
+        #self.name = name
         self.id_ = id_
-
+    def __str__(self):
+        return str(self.id_) + "  " + str(self.abilities)
 
 def calc_distance(location1, location2):
     pass

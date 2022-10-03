@@ -1,6 +1,6 @@
 import pandas as pd
 
-from Entities import Line, Task, GroupOfItem, Order, GroupByIsle, TaskTransfer
+from Entities import Line, Task, GroupOfItem, Order, GroupByIsle, TaskTransfer,Employee
 
 
 # def get_ailse_name(row):
@@ -77,6 +77,7 @@ def get_lines_by_item(lines):
         ans.append(GroupOfItem(item_id=line_list[0].item_id, lines=line_list))
     return ans
 
+
 def get_isle_by_item(lines):
     dict_ = {}
     for line in lines:
@@ -90,12 +91,14 @@ def get_isle_by_item(lines):
         ans.append(GroupByIsle(isle_id=line_list[0].location.aisle1, lines=line_list))
     return ans
 
+
 def create_files_by_date(df):
     dates = df["תאריך"].unique()
     for date in dates:
-        df_for_date  = df[df["תאריך"] == date]
+        df_for_date = df[df["תאריך"] == date]
         date_no_time = date.split(" ")[0]
-        df_for_date.to_excel("input_"+date_no_time+".xlsx", sheet_name=date_no_time)
+        df_for_date.to_excel("input_" + date_no_time + ".xlsx", sheet_name=date_no_time)
+
 
 def get_dict_by_aisle(item_groups):
     ans = {}
@@ -104,7 +107,7 @@ def get_dict_by_aisle(item_groups):
         if item_aisle not in ans.keys():
             ans[item_aisle] = []
         ans[item_aisle].append(item_group)
-    return  ans
+    return ans
 
 
 def get_aisle_couples():
@@ -136,7 +139,7 @@ def get_aisle_couples():
 def get_dict_by_aisle_connection(dict_by_aisle, aisle_couples):
     aisle_used = []
     ans = {}
-    for k,v in dict_by_aisle.items():
+    for k, v in dict_by_aisle.items():
         if k not in aisle_used:
             aisle_used.append(k)
             try:
@@ -157,21 +160,19 @@ def get_dict_by_aisle_connection(dict_by_aisle, aisle_couples):
                 ans[k] = dict_by_aisle[k]
                 print(k, "aisle not in map")
 
-
-
     return ans
 
 
 def get_sorted_value_list_by_volume(dict_by_aisle_connection):
     ans = {}
-    for k,v in dict_by_aisle_connection.items():
+    for k, v in dict_by_aisle_connection.items():
         ans[k] = sorted(v, key=lambda x: x.total_volume, reverse=True)
     return ans
 
 
-def get_transfer_groups_per_aisle(dict_sorted_value_by_volume,max_items_per_group,max_volume):
+def get_transfer_groups_per_aisle(dict_sorted_value_by_volume, max_items_per_group, max_volume):
     ans = {}
-    for k,v in dict_sorted_value_by_volume.items():
+    for k, v in dict_sorted_value_by_volume.items():
         ans[k] = []
         counter = max_items_per_group
         volume_sum = 0
@@ -179,20 +180,19 @@ def get_transfer_groups_per_aisle(dict_sorted_value_by_volume,max_items_per_grou
 
         for item_group in v:
 
-            if volume_sum+item_group.total_volume>max_volume or counter == 0:
-                ans[k].append(TaskTransfer(grouped_items_for_task,k))
-                counter = max_items_per_group-1
+            if volume_sum + item_group.total_volume > max_volume or counter == 0:
+                ans[k].append(TaskTransfer(grouped_items_for_task, k))
+                counter = max_items_per_group - 1
                 volume_sum = item_group.total_volume
                 grouped_items_for_task = [item_group]
 
             else:
-                counter = counter-1
-                volume_sum = volume_sum+item_group.total_volume
+                counter = counter - 1
+                volume_sum = volume_sum + item_group.total_volume
                 grouped_items_for_task.append(item_group)
 
-
-        if len(grouped_items_for_task)!=0:
-            ans[k].append(TaskTransfer(grouped_items_for_task,k))
+        if len(grouped_items_for_task) != 0:
+            ans[k].append(TaskTransfer(grouped_items_for_task, k))
     return ans
 
 
@@ -204,32 +204,48 @@ def get_transfer_groups_list(transfer_groups_per_aisle):
     return ans
 
 
-def get_item_groups_by_aisle(item_groups, max_items_per_group, max_transfer_task,max_volume):
+def get_item_groups_by_aisle(item_groups, max_items_per_group, max_transfer_task, max_volume):
     dict_by_aisle = get_dict_by_aisle(item_groups)
     aisle_couples = get_aisle_couples()
-    dict_by_aisle_connection = get_dict_by_aisle_connection(dict_by_aisle,aisle_couples)
+    dict_by_aisle_connection = get_dict_by_aisle_connection(dict_by_aisle, aisle_couples)
     dict_sorted_value_by_volume = get_sorted_value_list_by_volume(dict_by_aisle_connection)
-    transfer_groups_per_aisle = get_transfer_groups_per_aisle(dict_sorted_value_by_volume,max_items_per_group,max_volume)
+    transfer_groups_per_aisle = get_transfer_groups_per_aisle(dict_sorted_value_by_volume, max_items_per_group,
+                                                              max_volume)
     transfer_groups_list = get_transfer_groups_list(transfer_groups_per_aisle)
     transfer_groups_list_sorted = sorted(transfer_groups_list, key=lambda x: x.total_volume, reverse=True)
     ans = []
     for transfer_task in transfer_groups_list_sorted:
         ans.append(transfer_task)
-        max_transfer_task = max_transfer_task-1
+        max_transfer_task = max_transfer_task - 1
         if max_transfer_task == 0:
             break
     return ans
 
+
+def create_employees(employees_data):
+    employees_ = []
+    for ind in employees_data.index:
+        employee_id = employees_data['שם משתמש'][ind]
+        pick_grade = int(employees_data['ליקוט'][ind])
+        transfer_grade = int(employees_data['העברה'][ind])
+        abilities = {"pick":pick_grade,"transfer":transfer_grade}
+        employee = Employee(id_=employee_id, abilities=abilities)
+        employees_.append(employee)
+    return employees_
+
+employees_data = read_input("employees.xlsx")
+employees = create_employees(employees_data)
+
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
-#lines_input = read_input("input.xlsx")
-#create_files_by_date(lines_input)
+# lines_input = read_input("input.xlsx")
+# create_files_by_date(lines_input)
 # print(lines_input.info)
 date = "2022-06-20"
 dir = "input_by_date/"
-lines_input = read_input(dir+"input_"+date+".xlsx")
+lines_input = read_input(dir + "input_" + date + ".xlsx")
 
-#lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
+# lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
 lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
 lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה", value="3")
 # print(lines_input2.info)
@@ -237,11 +253,10 @@ lines = create_lines(dic_items_with_volume, lines_input4)
 order_groups = get_lines_by_order(lines)
 item_groups = get_lines_by_item(lines)
 
-
-#sorted(get_lines_by_item(lines), key=lambda x: x.total_volume, reverse=True)
-transfer_tasks = get_item_groups_by_aisle(item_groups = item_groups, max_items_per_group = 4,
-                                               max_transfer_task = 5,max_volume = 1.728)
-#isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
+# sorted(get_lines_by_item(lines), key=lambda x: x.total_volume, reverse=True)
+transfer_tasks = get_item_groups_by_aisle(item_groups=item_groups, max_items_per_group=4,
+                                          max_transfer_task=5, max_volume=1.728)
+# isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
 
 
 print(item_groups)
