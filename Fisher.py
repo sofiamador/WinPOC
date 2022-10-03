@@ -1,3 +1,5 @@
+from Entities import TaskTransfer
+
 
 class Utility:
     def __init__(self, task,employee,i,j,ro=1, ):
@@ -12,11 +14,32 @@ class Utility:
     def get_utility(self, ratio=1):
         return (ratio * self.linear_utility) ** self.ro
 
+    def get_task_name(self):
+        if isinstance(self.task, TaskTransfer):
+            return "transfer"
+        else:
+            return "pick"
+
     def calculate_linear_utility(self):
-        pass # TODO rij
         # transfer>pick
+        task_importance = self.get_task_importance()
+        task_name = self.get_task_name()
         # notice grade of employee for the type of task
-        # for transfer
+        employee_grade = self.employee.abilities[task_name]
+
+        # marked orders in transfer
+        marked_in_transfer =
+        # importance for pick do random
+
+
+
+        pass # TODO rij
+
+    def get_task_importance(self):
+        ans = 1
+        if isinstance(self.task, TaskTransfer):
+            ans = 100
+        return ans
 
 
 class FisherCentralizedImplementation:
@@ -169,7 +192,7 @@ class FisherForUser():
             single_row = []
             for j in range(employees):
                 util = Utility(tasks[i],employees[j],i,j)
-                single_row.append(Utility())
+                single_row.append(Utility(util))
             self.R_matrix.append(single_row)
 
     def create_X_matrix(self):

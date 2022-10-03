@@ -1,12 +1,13 @@
 import pandas as pd
 
-from Entities import Line, Task, GroupOfItem, Order, GroupByIsle, TaskTransfer, Employee
+from Entities import Line, Task, GroupOfItem, TaskOrder, GroupByIsle, TaskTransfer, Employee
 
 
 # def get_ailse_name(row):
 #     st = row['מאיתור']
 #     result = re.findall(pattern="^[A-Z]+", string=st)
 #     return result[0]
+from Fisher import FisherForUser
 
 
 def read_input(file_name):
@@ -60,7 +61,7 @@ def get_lines_by_order(lines):
     ans = []
     counter = 0
     for line_list in dict_.values():
-        ans.append(Order(id_=counter, lines=line_list))
+        ans.append(TaskOrder(id_=counter, lines=line_list))
 
     return ans
 
@@ -286,8 +287,21 @@ def mark_orders(order_groups, transfer_tasks):
                 break
     return order_groups,in_transfer_list
 
+
+def gather_tasks(order_tasks, transfer_tasks):
+    tasks = []
+    for task in order_tasks:
+        tasks.append(task)
+    for task in transfer_tasks:
+        task.append(task)
+    return tasks
+
+
+####------------AGENTS DATA--------------------
 employees_data = read_input("employees.xlsx")
 employees = create_employees(employees_data)
+
+####------------TASKS DATA--------------------
 items_input = read_input("volume.xlsx")
 dic_items_with_volume = create_dict_of_items(items_input)
 # lines_input = read_input("input.xlsx")
@@ -296,26 +310,19 @@ dic_items_with_volume = create_dict_of_items(items_input)
 date = "2022-06-20"
 dir = "input_by_date/"
 lines_input = read_input(dir + "input_" + date + ".xlsx")
-
 # lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
 lines_input3 = choose_records(lines_input, field_name="אזור במחסן", value="M")
 lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה", value="3")
 # print(lines_input2.info)
 lines = create_lines(dic_items_with_volume, lines_input4)
-order_groups = get_lines_by_order(lines)
+order_tasks = get_lines_by_order(lines)
 item_groups = get_lines_by_item(lines)
 transfer_tasks = get_item_groups_by_aisle(item_groups=item_groups, max_groups_per_task=4,
                                           max_transfer_task=5, max_volume=1.728)
+order_tasks, in_transfer_list = mark_orders(order_tasks, transfer_tasks)
+tasks = gather_tasks(order_tasks, transfer_tasks)
 
 
+####------------FISHER--------------------
 
-
-order_groups,in_transfer_list = mark_orders(order_groups,transfer_tasks)
-
-
-
-# sorted(get_lines_by_item(lines), key=lambda x: x.total_volume, reverse=True)
-# isle_groups = sorted(get_isle_by_item(lines), key=lambda x: x.number_of_lines, reverse=True)
-
-
-print(item_groups)
+FisherForUser(tasks, employees)

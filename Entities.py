@@ -1,3 +1,6 @@
+import random
+
+
 class Location():
     def __init__(self, loc):
         self.loc_str = loc
@@ -67,11 +70,20 @@ def calc_total_quantity(lines):
     return sum_quantity
 
 
-class TaskTransfer:
+
+class Task:
+    def __init__(self, ):
+        self.lines = []
+
+
+class TaskTransfer(Task):
     def __init__(self,  grouped_items, aisles):
+        Task.__init__(self)
         self.aisles = aisles
         self.grouped_items = grouped_items
         self.total_volume = calc_total_volume_of_grouped_items(grouped_items)
+        for group in grouped_items:
+            self.add_group_to_lines(group)
 
     def __str__(self):
         return str(self.aisles)+ ", "+ str(self.total_volume)
@@ -80,12 +92,18 @@ class TaskTransfer:
     def add_another_group(self,group):
         self.grouped_items.append(group)
         self.total_volume = self.total_volume + group.total_volume
+        self.add_group_to_lines(group)
 
-class Order:
+    def add_group_to_lines(self, group):
+        for line in group.lines:
+            self.lines.append(line)
+
+
+class TaskOrder:
     def __init__(self, id_, lines):
         self.lines = lines
         self.id_ = id_
-        self.importance = lines[0].importance
+        self.importance = random.Random(id_).random()#lines[0].importance
         self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)
         self.is_in_transfer= False
@@ -118,21 +136,6 @@ class GroupOfItem():
 
     def __eq__(self, other):
         return self.item_id == other.item_id
-
-class Task:
-
-    def __init__(self, aisle, type_="PIK"):
-        self.aisle = aisle
-        self.lines = []
-        self.type_ = type_
-        self.priority = 1
-        self.number_of_lines = 0
-        self.total_quantity = 0
-        self.total_volume = 0
-        self.number_of_agents_required = 1
-
-    def __str__(self):
-        return self.aisle
 
 
 class Employee():
