@@ -293,7 +293,7 @@ def gather_tasks(order_tasks, transfer_tasks):
     for task in order_tasks:
         tasks.append(task)
     for task in transfer_tasks:
-        task.append(task)
+        tasks.append(task)
     return tasks
 
 
@@ -325,4 +325,8 @@ tasks = gather_tasks(order_tasks, transfer_tasks)
 
 ####------------FISHER--------------------
 
-FisherForUser(tasks, employees)
+fisher_user = FisherForUser(tasks, employees)
+
+fisher_user.fmc.print_R()
+
+fisher_user.fmc.print_X()

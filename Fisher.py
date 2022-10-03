@@ -1,11 +1,12 @@
-from Entities import TaskTransfer
+from Entities import TaskTransfer, TaskOrder
 
 
 class Utility:
-    def __init__(self, task,employee,i,j,ro=1, ):
+    def __init__(self, task,employee,i,j,ro=1):
+        self.ratio_is_in_transfer = 0.3
         self.ro = ro
         self.task = task
-        self.employee = employee
+        self.agent = employee
         self.i = i
         self.j = j
         self.linear_utility = self.calculate_linear_utility()
@@ -22,24 +23,34 @@ class Utility:
 
     def calculate_linear_utility(self):
         # transfer>pick
-        task_importance = self.get_task_importance()
+        task_type_importance = self.get_task_importance()
         task_name = self.get_task_name()
+
         # notice grade of employee for the type of task
-        employee_grade = self.employee.abilities[task_name]
+        employee_grade = self.agent.abilities[task_name]/10
 
         # marked orders in transfer
-        marked_in_transfer =
+        marked_in_transfer = self.get_if_items_of_order_is_in_transfer()
+
         # importance for pick do random
+        importance = self.task.importance
 
-
-
-        pass # TODO rij
+        return task_type_importance*employee_grade*marked_in_transfer*importance
 
     def get_task_importance(self):
         ans = 1
         if isinstance(self.task, TaskTransfer):
             ans = 100
         return ans
+
+    def get_if_items_of_order_is_in_transfer(self):
+        if isinstance(self.task, TaskOrder):
+            if self.task.is_in_transfer:
+                return self.ratio_is_in_transfer
+
+        return 1
+
+
 
 
 class FisherCentralizedImplementation:
@@ -98,15 +109,37 @@ class FisherCentralizedImplementation:
                 self.NCLO = self.NCLO + 1
                 self.prices[j] += self.bids[i][j]
 
-    def print_xij(self):
+    def print_R(self):
+        print()
+        print("------Matrix R------")
+
+        for i in range(self.nofAgents):
+            print()
+            for j in range(self.nofGoods):
+                # if j == 0:
+                # print("Agent id_", self.utilities_[i][j].agent.agent_id_, end=":  ")
+
+                if self.utilities_[i][j].xij is not None and self.utilities_[i][j].xij > 0.0000001:
+                    if self.utilities_[i][j].xij > 0.99:
+                        print("1.00000", end="\t")
+                    if self.utilities_[i][j].xij == 0:
+                        print("0.00000", end="\t")
+                    else:
+                        print(round(self.utilities_[i][j].linear_utility, ndigits=5), end="\t")
+                else:
+                    print("0.00000", end="\t")
+        print()
+
+
+    def print_X(self):
         print()
         print("------Matrix X------")
 
         for i in range(self.nofAgents):
             print()
             for j in range(self.nofGoods):
-                if j == 0:
-                    print("Agent id_", self.utilities_[i][j].agent.agent_id_, end=":  ")
+                #if j == 0:
+                    #print("Agent id_", self.utilities_[i][j].agent.agent_id_, end=":  ")
 
                 if self.utilities_[i][j].xij is not None and self.utilities_[i][j].xij > 0.0000001:
                     if self.utilities_[i][j].xij > 0.99:
@@ -164,10 +197,9 @@ class FisherCentralizedImplementation:
         return
 
     def isStable(self):
-        self.counter = self.counter + 1
-        if self.counter > 5000:
-            return True
-        # print("change", self.change)
+        #self.counter = self.counter + 1
+        #if self.counter > 20000:
+        #    return True
         return self.change < self.THRESHOLD
 
     def fix_xij(self):
@@ -184,15 +216,19 @@ class FisherForUser():
         self.fmc = FisherCentralizedImplementation(self.R_matrix)
         self.X_matrix = []
         self.create_X_matrix()
+        #for i in range(len(self.X_matrix)):
+        #    print()
+        #    for j in range (len(self.X_matrix[i])):
+        #        print(self.X_matrix[i][j],end = ",")
 
 
     def set_R_matrix(self, tasks, employees):
 
         for i in range(len(tasks)):
             single_row = []
-            for j in range(employees):
+            for j in range(len(employees)):
                 util = Utility(tasks[i],employees[j],i,j)
-                single_row.append(Utility(util))
+                single_row.append(util)
             self.R_matrix.append(single_row)
 
     def create_X_matrix(self):

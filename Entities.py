@@ -72,8 +72,9 @@ def calc_total_quantity(lines):
 
 
 class Task:
-    def __init__(self, ):
+    def __init__(self ):
         self.lines = []
+        self.importance = 1
 
 
 class TaskTransfer(Task):
@@ -99,8 +100,9 @@ class TaskTransfer(Task):
             self.lines.append(line)
 
 
-class TaskOrder:
+class TaskOrder(Task):
     def __init__(self, id_, lines):
+        Task.__init__(self)
         self.lines = lines
         self.id_ = id_
         self.importance = random.Random(id_).random()#lines[0].importance
