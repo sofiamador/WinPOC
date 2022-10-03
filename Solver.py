@@ -1,6 +1,4 @@
 
-
-
 class Utility:
     def __init__(self, employee, task, t_now, utility_function, ro=1):
 
@@ -24,13 +22,13 @@ class Utility:
         self.xij_normalized_times_r_ij = self.xij_normalized * self.get_utility(ratio)
 
     def get_utility(self, ratio=1):
-        return (ratio * self.linear_utility) ** self.ro
+        return (ratio * self.linear_utility)
 
 
 
 
 class FisherSolver():
-    def __init__(self,tasks, employees):
+    def __init__(self ,tasks, employees):
         self.tasks = tasks
         self.employees = employees
         self.utilities = self.create_utilities()

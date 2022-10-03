@@ -296,6 +296,23 @@ def gather_tasks(order_tasks, transfer_tasks):
         tasks.append(task)
     return tasks
 
+def create_pandas_ourput(output_tasks):
+    quantity_lst = []
+    item_id_lst = []
+    order_id_lst= []
+    for task in output_tasks:
+        for l in task.lines:
+            quantity_lst.append(l.quantity)
+            item_id_lst.append(l.item_id)
+            order_id_lst.append(l.order_id)
+        quantity_lst.append("000")
+        item_id_lst.append("000")
+        order_id_lst.append("000")
+    d = {'מקט': item_id_lst, 'מספר הזמנה': order_id_lst,"כמות":quantity_lst}
+    df = pd.DataFrame(data=d)
+    return df
+
+
 
 ####------------AGENTS DATA--------------------
 employees_data = read_input("employees.xlsx")
@@ -330,3 +347,25 @@ fisher_user = FisherForUser(tasks, employees)
 fisher_user.fmc.print_R()
 
 fisher_user.fmc.print_X()
+
+####--------Output-----------######
+output = {}
+output[employees[0]] = [tasks[0],tasks[-1]]
+output[employees[1]] = [tasks[1],tasks[1],tasks[-2]]
+
+
+def write_to_excel(employee_id, pd_output, first):
+    if first:
+        pd_output.to_excel("output.xlsx",
+                     sheet_name=employee_id, index=False)
+        return
+    writer = pd.ExcelWriter("output.xlsx")
+    pd_output.to_excel(writer, sheet_name=employee_id, index=False)
+    # with pd.ExcelWriter('output.xlsx',mode='a') as writer:
+    #     pd_output.to_excel(writer, sheet_name=employee_id)
+
+first = True
+for employee in output:
+    pd_output = create_pandas_ourput(output[employee])
+    write_to_excel(employee.id_,pd_output,first)
+    first = False
