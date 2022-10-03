@@ -2,7 +2,7 @@ from Entities import TaskTransfer, TaskOrder
 
 
 class Utility:
-    def __init__(self, task,employee,i,j,ro=1):
+    def __init__(self, employee,task,i,j,ro=1):
         self.ratio_is_in_transfer = 0.3
         self.ro = ro
         self.task = task
@@ -80,6 +80,7 @@ class FisherCentralizedImplementation:
                     self.NCLO = self.NCLO+1
 
         self.generateAllocations()
+        self.algorithm()
 
     # generates allocation according to current bids and prices
     def generateAllocations(self):
@@ -92,7 +93,7 @@ class FisherCentralizedImplementation:
             for j in range(self.nofGoods):
                 if self.prices[j] != 0:
                     if self.utilities_[i][j].xij is None:
-                        self.change = 9999999
+                        pass
                     else:
                         self.change += abs(((self.bids[i][j] / self.prices[j]) - self.utilities_[i][j].xij))
 
@@ -167,7 +168,7 @@ class FisherCentralizedImplementation:
         for i in range(self.nofAgents):
             for j in range(self.nofGoods):
                 if self.utilities_[i][j].xij is not None:
-                    utilities[i][j] = self.utilities_[i][j].getUtility(self.utilities_[i][j].xij)
+                    utilities[i][j] = self.utilities_[i][j].get_utility(self.utilities_[i][j].xij)
                     utilitySum[i] += utilities[i][j]
                     self.NCLO += 1
 
@@ -193,13 +194,13 @@ class FisherCentralizedImplementation:
         self.iterate()
         while self.isStable() is False:
             self.iterate()
-        self.fix_xij()
+        #self.fix_xij()
         return
 
     def isStable(self):
-        #self.counter = self.counter + 1
-        #if self.counter > 20000:
-        #    return True
+        self.counter = self.counter + 1
+        if self.counter > 2000:
+            return True
         return self.change < self.THRESHOLD
 
     def fix_xij(self):
@@ -224,10 +225,10 @@ class FisherForUser():
 
     def set_R_matrix(self, tasks, employees):
 
-        for i in range(len(tasks)):
+        for i in range(len(employees)):
             single_row = []
-            for j in range(len(employees)):
-                util = Utility(tasks[i],employees[j],i,j)
+            for j in range(len(tasks)):
+                util = Utility(employees[i],tasks[j],i,j)
                 single_row.append(util)
             self.R_matrix.append(single_row)
 
