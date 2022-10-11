@@ -8,6 +8,7 @@ from Entities import Line, Task, GroupOfItem, TaskOrder, GroupByIsle, TaskTransf
 #     result = re.findall(pattern="^[A-Z]+", string=st)
 #     return result[0]
 from Fisher import FisherForUser
+from FisherV2 import FisherForUserV2
 
 
 def read_input(file_name):
@@ -342,9 +343,9 @@ tasks = gather_tasks(order_tasks, transfer_tasks)
 
 ####------------FISHER--------------------
 
-fisher_user = FisherForUser(tasks, employees)
+fisher_user = FisherForUserV2(employees, tasks)
 
-fisher_user.fmc.print_R()
+#fisher_user.fmc.print_R()
 
 fisher_user.fmc.print_X()
 
