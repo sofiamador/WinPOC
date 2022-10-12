@@ -30,29 +30,46 @@ class Utility:
 
         # notice grade of employee for the type of task
         employee_grade = self.agent.abilities[task_name]
+        employee_grade_threshold = 8
+        task_importance = self.task.importance
+        task_importance_threshold = 0.5
+
+        comb_grade = 0
+
+        if employee_grade<=employee_grade_threshold and task_importance<=task_importance_threshold:
+            comb_grade = 10
+
+        if employee_grade <= employee_grade_threshold and task_importance > task_importance_threshold:
+            comb_grade = 0.5
+
+        if employee_grade>employee_grade_threshold and task_importance<=task_importance_threshold:
+            comb_grade = 0.5
+
+        if employee_grade>employee_grade_threshold and task_importance>task_importance_threshold:
+            comb_grade = 10
+
+
 
         # marked orders in transfer
         marked_in_transfer = self.get_if_items_of_order_is_in_transfer()
 
         # importance for pick do random
-        importance = self.task.importance
+
         if employee_grade == 0:
             return 0
 
-        #random_for_fix = random.Random( (self.i+1)*17+(self.j+1)*17)
-        #rnd_for_util = random_for_fix.random()
-        return (task_type_importance * marked_in_transfer * importance) * employee_grade#*rnd_for_util
+        return (task_type_importance * marked_in_transfer*comb_grade)
 
     def get_task_importance(self):
         ans = 1
         if isinstance(self.task, TaskTransfer):
-            ans = 100
+            ans = 10
         return ans
 
     def get_if_items_of_order_is_in_transfer(self):
         if isinstance(self.task, TaskOrder):
             if self.task.is_in_transfer:
-                return self.ratio_is_in_transfer
+                return 0
 
         return 1
 
