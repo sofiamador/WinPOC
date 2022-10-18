@@ -1,7 +1,12 @@
 import pandas as pd
 
-from Entities import Line, Task, GroupOfItem, TaskOrder, GroupByIsle, TaskTransfer, Employee
+from Entities import Line, GroupOfItem, TaskPick, GroupByIsle, TaskTransfer, Employee
 
+transfer_tasks = False
+orders_to_remove = []
+max_groups_per_task_transfer = 4
+max_transfer_task= 5
+max_volume=1.728
 
 # def get_ailse_name(row):
 #     st = row['מאיתור']
@@ -62,7 +67,7 @@ def get_lines_by_order(lines):
     ans = []
     counter = 0
     for line_list in dict_.values():
-        ans.append(TaskOrder(id_=counter, lines=line_list))
+        ans.append(TaskPick(id_=counter, lines=line_list))
 
     return ans
 
@@ -279,14 +284,12 @@ def get_items_in_transfer(transfer_tasks):
 
 def mark_orders(order_groups, transfer_tasks):
     items_in_transfer = get_items_in_transfer(transfer_tasks)
-    in_transfer_list = []
     for order in order_groups:
         for line in order.lines:
             if line.item_id in items_in_transfer:
                 order.is_in_transfer = True
-                in_transfer_list.append(order)
                 break
-    return order_groups,in_transfer_list
+    return order_groups
 
 
 def gather_tasks(order_tasks, transfer_tasks):
@@ -313,6 +316,23 @@ def create_pandas_ourput(output_tasks):
     df = pd.DataFrame(data=d)
     return df
 
+def get_orders_not_in_transfer(order_tasks):
+    ans = []
+    for order_task in order_tasks:
+        if order_task.is_in_transfer == False:
+            ans.append(order_task)
+    return ans
+
+
+def create_numberOfIdsRatio(order_tasks):
+    def get_number_of_ids(task):
+        return task.numberOfIds
+
+    max_ids_order = max(order_tasks, key=get_number_of_ids)
+    max_ids = max_ids_order.numberOfIds
+    for order_task in order_tasks:
+        order_task.numberOfIdsRatio = order_task.numberOfIds / max_ids
+
 
 
 ####------------AGENTS DATA--------------------
@@ -333,21 +353,24 @@ lines_input3 = choose_records(lines_input, field_name="אזור במחסן", val
 lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה", value="3")
 # print(lines_input2.info)
 lines = create_lines(dic_items_with_volume, lines_input4)
-order_tasks = get_lines_by_order(lines)
+pick_tasks = get_lines_by_order(lines)
 item_groups = get_lines_by_item(lines)
-transfer_tasks = get_item_groups_by_aisle(item_groups=item_groups, max_groups_per_task=4,
-                                          max_transfer_task=5, max_volume=1.728)
-order_tasks, in_transfer_list = mark_orders(order_tasks, transfer_tasks)
-tasks = gather_tasks(order_tasks, transfer_tasks)
+if transfer_tasks:
+    transfer_tasks = get_item_groups_by_aisle(item_groups=item_groups, max_groups_per_task=max_groups_per_task_transfer,
+                                              max_transfer_task=max_transfer_task, max_volume=max_volume)
+else:
+    transfer_tasks = []
 
+
+pick_tasks = mark_orders(pick_tasks, transfer_tasks)
+pick_tasks = get_orders_not_in_transfer(pick_tasks)
+create_numberOfIdsRatio(pick_tasks)
+tasks = gather_tasks(pick_tasks, transfer_tasks)
 
 ####------------FISHER--------------------
 
-fisher_user = FisherForUserV2(employees, tasks)
+fisher_user = FisherForUserV2(employees, tasks, transfer_tasks, pick_tasks)
 
-#fisher_user.fmc.print_R()
-
-fisher_user.fmc.print_X()
 
 ####--------Output-----------######
 output = {}
@@ -362,8 +385,7 @@ def write_to_excel(employee_id, pd_output, first):
         return
     writer = pd.ExcelWriter("output.xlsx")
     pd_output.to_excel(writer, sheet_name=employee_id, index=False)
-    # with pd.ExcelWriter('output.xlsx',mode='a') as writer:
-    #     pd_output.to_excel(writer, sheet_name=employee_id)
+
 
 first = True
 for employee in output:

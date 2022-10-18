@@ -100,7 +100,7 @@ class TaskTransfer(Task):
             self.lines.append(line)
 
 
-class TaskOrder(Task):
+class TaskPick(Task):
     def __init__(self, id_, lines):
         Task.__init__(self)
         self.lines = lines
@@ -109,6 +109,16 @@ class TaskOrder(Task):
         self.total_volume = calc_total_volume(lines)
         self.number_of_lines = len(lines)
         self.is_in_transfer= False
+        self.numberOfIds = self.getNumberOfIds();
+
+    def getNumberOfIds(self):
+        ids_ = []
+        for line in self.lines:
+            if line.item_id not in ids_:
+                ids_.append(line.item_id)
+        return len(ids_)
+
+
 
 class GroupByIsle:
     def __init__(self, isle_id, lines):

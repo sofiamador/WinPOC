@@ -1,4 +1,4 @@
-from Entities import TaskTransfer, TaskOrder
+from Entities import TaskTransfer, TaskPick
 
 
 class Utility:
@@ -45,7 +45,7 @@ class Utility:
         return ans
 
     def get_if_items_of_order_is_in_transfer(self):
-        if isinstance(self.task, TaskOrder):
+        if isinstance(self.task, TaskPick):
             if self.task.is_in_transfer:
                 return self.ratio_is_in_transfer
 

@@ -1,11 +1,12 @@
 import random
+from operator import attrgetter
 
-from Entities import TaskTransfer, TaskOrder
-
+from Entities import TaskTransfer, TaskPick
+extra_for_transfer = 1
 
 class Utility:
     def __init__(self, employee,task , i, j, ro=1):
-        self.ratio_is_in_transfer = 0.3
+
         self.ro = ro
         self.task = task
         self.agent = employee
@@ -25,30 +26,25 @@ class Utility:
 
     def calculate_linear_utility(self):
         # transfer>pick
-        task_type_importance = self.get_task_importance()
         task_name = self.get_task_name()
+        employee_grade = self.agent.abilities[task_name]
+        combo_grade = 0
+
+
+        if isinstance(self.task, TaskTransfer):
+            combo_grade= extra_for_transfer*employee_grade
+
+        #task_type_importance = self.get_task_importance()
+
+        if isinstance(self.task, TaskPick):
+            employee_grade = employee_grade / 10
+            if self.task.numberOfIdsRatio<0.5 and employee_grade<0.5:
+               combo_grade = (1- self.task.numberOfIdsRatio)*(1-employee_grade)
+            else:
+               combo_grade =self.task.numberOfIdsRatio*employee_grade
 
         # notice grade of employee for the type of task
-        employee_grade = self.agent.abilities[task_name]
-        employee_grade_threshold = 8
         task_importance = self.task.importance
-        task_importance_threshold = 0.5
-
-        comb_grade = 0
-
-        if employee_grade<=employee_grade_threshold and task_importance<=task_importance_threshold:
-            comb_grade = 10
-
-        if employee_grade <= employee_grade_threshold and task_importance > task_importance_threshold:
-            comb_grade = 0.5
-
-        if employee_grade>employee_grade_threshold and task_importance<=task_importance_threshold:
-            comb_grade = 0.5
-
-        if employee_grade>employee_grade_threshold and task_importance>task_importance_threshold:
-            comb_grade = 10
-
-
 
         # marked orders in transfer
         marked_in_transfer = self.get_if_items_of_order_is_in_transfer()
@@ -58,16 +54,12 @@ class Utility:
         if employee_grade == 0:
             return 0
 
-        return (task_type_importance * marked_in_transfer*comb_grade)
+        return (marked_in_transfer*combo_grade)
 
-    def get_task_importance(self):
-        ans = 1
-        if isinstance(self.task, TaskTransfer):
-            ans = 10
-        return ans
+
 
     def get_if_items_of_order_is_in_transfer(self):
-        if isinstance(self.task, TaskOrder):
+        if isinstance(self.task, TaskPick):
             if self.task.is_in_transfer:
                 return 0
 
@@ -191,19 +183,93 @@ class FisherDistributed:
 
 
 
-class FisherForUserV2():
-    def __init__(self, employees,tasks):
-        self.R_matrix = []
-        self.set_R_matrix(employees, tasks)
-        self.fmc = FisherDistributed(self.R_matrix)
-        self.X_matrix = []
-        self.create_X_matrix()
-        # for i in range(len(self.X_matrix)):
-        #    print()
-        #    for j in range (len(self.X_matrix[i])):
-        #        print(self.X_matrix[i][j],end = ",")
 
-    def set_R_matrix(self, employees,tasks ):
+
+class FisherForUserV2():
+    def __init__(self, employees,tasks,tasks_transfer,tasks_pick):
+        #self.R_matrix = []
+        #self.set_R_matrix(employees, tasks)
+        #self.fmc = FisherDistributed(self.R_matrix)
+        #self.X_matrix = []
+        #self.create_X_matrix()
+        self.employees = employees
+
+        self.schedule = {}
+        for employee in employees:
+            self.schedule[employee.id_] = []
+
+        self.schedule_tasks_transfer(tasks_transfer)
+        self.schedule_tasks_pick(tasks_pick)
+
+
+
+
+    def schedule_tasks_pick(self, tasks_pick):
+        tasks_pick = sorted(tasks_pick, key=lambda x: x.numberOfIdsRatio, reverse=True)
+        for task_pick in tasks_pick:
+            self.place_task_pick(task_pick)
+
+
+    def schedule_tasks_transfer(self, tasks_transfer):
+        tasks_transfer = sorted(tasks_transfer, key=lambda x: x.total_volume, reverse=True)
+        for task_transfer in tasks_transfer:
+            self.place_task_transfer(task_transfer)
+
+    def place_task_pick(self, task_pick):
+
+        min_id_with_tasks = min(self.schedule.keys(),key=lambda x:len(self.schedule[x]))
+        min_amount_of_tasks= len(self.schedule[min_id_with_tasks])
+
+        relevant_employees_ids = self.get_relevant_employees_ids(min_amount_of_tasks,self.schedule)
+        relevant_employees = self.get_relevant_employees(relevant_employees_ids,self.employees)
+        assigned_employee = max(relevant_employees,key=lambda x: x.abilities["pick"])
+        self.schedule[assigned_employee.id_].append(task_pick)
+
+    def get_temp_schedule(self,employees_for_transfer):
+        temp_schedule = {}
+        for emp in employees_for_transfer:
+            temp_schedule[emp.id_] = self.schedule[emp.id_]
+        return  temp_schedule
+
+
+    def get_relevant_employees_ids(self, min_amount_of_tasks, temp_schedule):
+        ans = []
+        for k, v in temp_schedule.items():
+            if len(v) == min_amount_of_tasks:
+                ans.append(k)
+        return ans
+
+
+    def get_relevant_employees(self, relevant_employees_ids, employees_for_transfer):
+        ans = []
+        for id_ in relevant_employees_ids:
+            for emp in employees_for_transfer:
+                if emp.id_ == id_:
+                    ans.append(emp)
+        return ans
+
+
+    def place_task_transfer(self, task_transfer):
+
+        employees_for_transfer = self.get_employees_for_transfer()
+        temp_schedule = self.get_temp_schedule(employees_for_transfer)
+        min_id_with_tasks = min(temp_schedule.keys(),key=lambda x:len(temp_schedule[x]))
+        min_amount_of_tasks= len(temp_schedule[min_id_with_tasks])
+
+        relevant_employees_ids = self.get_relevant_employees_ids(min_amount_of_tasks,temp_schedule)
+        relevant_employees = self.get_relevant_employees(relevant_employees_ids,employees_for_transfer)
+        assigned_employee = max(relevant_employees,key=lambda x: x.abilities["transfer"])
+        self.schedule[assigned_employee.id_].append(task_transfer)
+
+    def get_employees_for_transfer(self):
+        ans = []
+        for employee in self.employees:
+            if employee.abilities["transfer"] > 0:
+                ans.append(employee)
+        return ans
+
+
+    def set_R_matrix(self, employees,tasks):
 
         for i in range(len(employees)):
             single_row = []
@@ -218,3 +284,16 @@ class FisherForUserV2():
             for j in range(len(self.R_matrix[0])):
                 single_row.append(self.R_matrix[i][j].xij)
             self.X_matrix.append(single_row)
+
+
+
+
+
+
+
+
+
+
+
+
+
