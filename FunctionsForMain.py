@@ -360,5 +360,5 @@ def write_to_excel(employee_id, pd_output, first):
                      sheet_name=employee_id, index=False)
         return
 
-    with pd.ExcelWriter("output.xlsx",mode="a") as writer:
+    with pd.ExcelWriter("output.xlsx",mode="a",engine="openpyxl") as writer:
         pd_output.to_excel(writer, sheet_name=employee_id)
