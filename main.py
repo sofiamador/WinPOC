@@ -2,11 +2,14 @@ import pandas as pd
 
 from Entities import Line, GroupOfItem, TaskPick, GroupByIsle, TaskTransfer, Employee
 
-transfer_tasks = False
+is_with_transfer_tasks = False
 orders_to_remove = []
 max_groups_per_task_transfer = 4
 max_transfer_task= 5
 max_volume=1.728
+
+
+
 
 # def get_ailse_name(row):
 #     st = row['מאיתור']
@@ -67,7 +70,7 @@ def get_lines_by_order(lines):
     ans = []
     counter = 0
     for line_list in dict_.values():
-        ans.append(TaskPick(id_=counter, lines=line_list))
+        ans.append(TaskPick(id_=line_list[0].order_id, lines=line_list))
 
     return ans
 
@@ -334,6 +337,38 @@ def create_numberOfIdsRatio(order_tasks):
         order_task.numberOfIdsRatio = order_task.numberOfIds / max_ids
 
 
+def get_list_of_pick_ids_to_delete():
+    pand_table = read_input("finished_tasks.xlsx")
+    temp_ = pand_table["order_ids_to_remove"]
+    temp2_ = []
+    for i in range(len(temp_)):
+        temp2_.append(pand_table["order_ids_to_remove"][i])
+    return temp2_
+
+
+def get_task_by_id(id_to_delete,pick_tasks):
+    for task in pick_tasks:
+        if task.id_ == id_to_delete:
+            return task
+
+
+
+
+def remove_pick_tasks_that_are_finished(pick_tasks):
+    list_of_pick_ids_to_delete = get_list_of_pick_ids_to_delete()
+    to_remove = []
+    for id_to_delete in list_of_pick_ids_to_delete:
+        the_task = get_task_by_id(id_to_delete,pick_tasks)
+        if the_task is None:
+            print(id_to_delete, "was not found and was not deleted")
+        else:
+            to_remove.append(the_task)
+    ans = []
+    for task in pick_tasks:
+        if task not in to_remove:
+            ans.append(task)
+    return ans
+
 
 ####------------AGENTS DATA--------------------
 employees_data = read_input("employees.xlsx")
@@ -355,7 +390,7 @@ lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה",
 lines = create_lines(dic_items_with_volume, lines_input4)
 pick_tasks = get_lines_by_order(lines)
 item_groups = get_lines_by_item(lines)
-if transfer_tasks:
+if is_with_transfer_tasks:
     transfer_tasks = get_item_groups_by_aisle(item_groups=item_groups, max_groups_per_task=max_groups_per_task_transfer,
                                               max_transfer_task=max_transfer_task, max_volume=max_volume)
 else:
@@ -365,6 +400,9 @@ else:
 pick_tasks = mark_orders(pick_tasks, transfer_tasks)
 pick_tasks = get_orders_not_in_transfer(pick_tasks)
 create_numberOfIdsRatio(pick_tasks)
+pick_tasks = remove_pick_tasks_that_are_finished(pick_tasks)
+
+
 tasks = gather_tasks(pick_tasks, transfer_tasks)
 
 ####------------FISHER--------------------
