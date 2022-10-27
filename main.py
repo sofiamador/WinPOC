@@ -41,6 +41,8 @@ lines_input4 = choose_records(lines_input3, field_name="קוד קו חלוקה",
 # print(lines_input2.info)
 lines = create_lines(dic_items_with_volume, lines_input4)
 pick_tasks = get_lines_by_order(lines)
+pick_tasks = remove_pick_tasks_that_are_finished(pick_tasks)
+
 item_groups = get_lines_by_item(lines)
 if is_with_transfer_tasks:
     transfer_tasks = get_item_groups_by_aisle(item_groups=item_groups, max_groups_per_task=max_groups_per_task_transfer,
@@ -52,7 +54,6 @@ else:
 pick_tasks = mark_orders(pick_tasks, transfer_tasks)
 pick_tasks = get_orders_not_in_transfer(pick_tasks)
 create_numberOfIdsRatio(pick_tasks)
-pick_tasks = remove_pick_tasks_that_are_finished(pick_tasks)
 tasks = gather_tasks(pick_tasks, transfer_tasks)
 
 ####------------FISHER--------------------
