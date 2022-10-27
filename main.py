@@ -408,7 +408,7 @@ tasks = gather_tasks(pick_tasks, transfer_tasks)
 ####------------FISHER--------------------
 
 fisher_user = FisherForUserV2(employees, tasks, transfer_tasks, pick_tasks)
-
+schedule = fisher_user.schedule
 
 ####--------Output-----------######
 output = {}
