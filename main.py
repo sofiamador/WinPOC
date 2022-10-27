@@ -5,7 +5,7 @@ from Entities import Line, GroupOfItem, TaskPick, GroupByIsle, TaskTransfer, Emp
 is_with_transfer_tasks = True
 orders_to_remove = []
 max_groups_per_task_transfer = 4
-max_transfer_task= 5
+max_transfer_task= 2
 max_volume=1.728
 
 
