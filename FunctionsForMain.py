@@ -1,3 +1,6 @@
+import pandas as pd
+
+from Entities import Line, GroupOfItem, TaskTransfer, Employee, GroupByIsle, TaskPick
 
 
 def read_input(file_name):
@@ -349,3 +352,13 @@ def remove_pick_tasks_that_are_finished(pick_tasks):
         if task not in to_remove:
             ans.append(task)
     return ans
+
+
+def write_to_excel(employee_id, pd_output, first):
+    if first:
+        pd_output.to_excel("output.xlsx",
+                     sheet_name=employee_id, index=False)
+        return
+
+    with pd.ExcelWriter("output.xlsx",mode="a") as writer:
+        pd_output.to_excel(writer, sheet_name=employee_id)

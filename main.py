@@ -20,7 +20,7 @@ from FisherV2 import FisherForUserV2
 from FunctionsForMain import read_input, create_employees, create_dict_of_items, create_files_by_date, choose_records, \
     create_lines, get_lines_by_order, get_lines_by_item, get_item_groups_by_aisle, mark_orders, \
     get_orders_not_in_transfer, create_numberOfIdsRatio, remove_pick_tasks_that_are_finished, gather_tasks, \
-    create_pandas_ourput
+    create_pandas_ourput, write_to_excel
 
 ####------------AGENTS DATA--------------------
 employees_data = read_input("employees.xlsx")
@@ -64,15 +64,6 @@ schedule = fisher_user.schedule
 output = {}
 output[employees[0]] = [tasks[0],tasks[-1]]
 output[employees[1]] = [tasks[1],tasks[1],tasks[-2]]
-
-
-def write_to_excel(employee_id, pd_output, first):
-    if first:
-        pd_output.to_excel("output.xlsx",
-                     sheet_name=employee_id, index=False)
-        return
-    writer = pd.ExcelWriter("output.xlsx")
-    pd_output.to_excel(writer, sheet_name=employee_id, index=False)
 
 
 first = True
