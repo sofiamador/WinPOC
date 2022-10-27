@@ -291,15 +291,21 @@ def create_pandas_ourput(output_tasks):
     quantity_lst = []
     item_id_lst = []
     order_id_lst= []
+    type_lst = []
     for task in output_tasks:
         for l in task.lines:
             quantity_lst.append(l.quantity)
             item_id_lst.append(l.item_id)
             order_id_lst.append(l.order_id)
+            if isinstance(task,TaskPick):
+                type_lst.append("ליקוט")
+            else:
+                type_lst.append("העברה")
         quantity_lst.append("000")
         item_id_lst.append("000")
         order_id_lst.append("000")
-    d = {'מקט': item_id_lst, 'מספר הזמנה': order_id_lst,"כמות":quantity_lst}
+        type_lst.append("000")
+    d = {'מקט': item_id_lst, 'מספר הזמנה': order_id_lst,"כמות":quantity_lst,"סוג":type_lst}
     df = pd.DataFrame(data=d)
     return df
 
@@ -361,4 +367,4 @@ def write_to_excel(employee_id, pd_output, first):
         return
 
     with pd.ExcelWriter("output.xlsx",mode="a",engine="openpyxl") as writer:
-        pd_output.to_excel(writer, sheet_name=employee_id)
+        pd_output.to_excel(writer, sheet_name=employee_id,index=False)

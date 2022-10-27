@@ -2,7 +2,7 @@ import pandas as pd
 
 from Entities import Line, GroupOfItem, TaskPick, GroupByIsle, TaskTransfer, Employee
 
-is_with_transfer_tasks = False
+is_with_transfer_tasks = True
 orders_to_remove = []
 max_groups_per_task_transfer = 4
 max_transfer_task= 5
@@ -61,13 +61,13 @@ fisher_user = FisherForUserV2(employees, tasks, transfer_tasks, pick_tasks)
 schedule = fisher_user.schedule
 
 ####--------Output-----------######
-output = {}
-output[employees[0]] = [tasks[0],tasks[-1]]
-output[employees[1]] = [tasks[1],tasks[1],tasks[-2]]
+# output = {}
+# output[employees[0]] = [tasks[0],tasks[-1]]
+# output[employees[1]] = [tasks[1],tasks[1],tasks[-2]]
 
 
 first = True
-for employee in output:
-    pd_output = create_pandas_ourput(output[employee])
-    write_to_excel(employee.id_,pd_output,first)
+for employee in schedule:
+    pd_output = create_pandas_ourput(schedule[employee])
+    write_to_excel(employee,pd_output,first)
     first = False
