@@ -198,7 +198,7 @@ def get_transfer_groups_list(transfer_groups_per_aisle):
     return ans
 
 
-def select_transfer_tasks(transfer_groups_list_sorted,max_transfer_task):
+def select_transfer_tasks(transfer_groups_list_sorted, max_transfer_task):
     ans = []
     for transfer_task in transfer_groups_list_sorted:
         ans.append(transfer_task)
@@ -208,7 +208,7 @@ def select_transfer_tasks(transfer_groups_list_sorted,max_transfer_task):
     return ans
 
 
-def fix_selected_transfer_tasks(selected_transfer_tasks,dict_sorted_value_by_volume,max_groups_per_task,max_volume):
+def fix_selected_transfer_tasks(selected_transfer_tasks, dict_sorted_value_by_volume, max_groups_per_task, max_volume):
     list_of_grouped_transfer_tasks = []
     for task in selected_transfer_tasks:
         for group in task.grouped_items:
@@ -228,6 +228,7 @@ def fix_selected_transfer_tasks(selected_transfer_tasks,dict_sorted_value_by_vol
 
     return selected_transfer_tasks
 
+
 def get_item_groups_by_aisle(item_groups, max_groups_per_task, max_transfer_task, max_volume):
     dict_by_aisle = get_dict_by_aisle(item_groups)
     aisle_couples = get_aisle_couples()
@@ -238,12 +239,11 @@ def get_item_groups_by_aisle(item_groups, max_groups_per_task, max_transfer_task
     transfer_groups_list = get_transfer_groups_list(transfer_groups_per_aisle)
     transfer_groups_list_sorted = sorted(transfer_groups_list, key=lambda x: x.total_volume, reverse=True)
 
-    #--------------
-    selected_transfer_tasks = select_transfer_tasks(transfer_groups_list_sorted,max_transfer_task)
-    selected_transfer_tasks = fix_selected_transfer_tasks(selected_transfer_tasks,dict_sorted_value_by_volume,max_groups_per_task,max_volume)
+    # --------------
+    selected_transfer_tasks = select_transfer_tasks(transfer_groups_list_sorted, max_transfer_task)
+    selected_transfer_tasks = fix_selected_transfer_tasks(selected_transfer_tasks, dict_sorted_value_by_volume,
+                                                          max_groups_per_task, max_volume)
     return selected_transfer_tasks
-
-
 
 
 def create_employees(employees_data):
@@ -287,17 +287,18 @@ def gather_tasks(order_tasks, transfer_tasks):
         tasks.append(task)
     return tasks
 
-def create_pandas_ourput(output_tasks):
+
+def create_pandas_output(output_tasks):
     quantity_lst = []
     item_id_lst = []
-    order_id_lst= []
+    order_id_lst = []
     type_lst = []
     for task in output_tasks:
         for l in task.lines:
             quantity_lst.append(l.quantity)
             item_id_lst.append(l.item_id)
             order_id_lst.append(l.order_id)
-            if isinstance(task,TaskPick):
+            if isinstance(task, TaskPick):
                 type_lst.append("ליקוט")
             else:
                 type_lst.append("העברה")
@@ -305,9 +306,50 @@ def create_pandas_ourput(output_tasks):
         item_id_lst.append("000")
         order_id_lst.append("000")
         type_lst.append("000")
-    d = {'מקט': item_id_lst, 'מספר הזמנה': order_id_lst,"כמות":quantity_lst,"סוג":type_lst}
+    d = {'מקט': item_id_lst, 'מספר הזמנה': order_id_lst, "כמות": quantity_lst, "סוג": type_lst}
     df = pd.DataFrame(data=d)
     return df
+
+
+def create_pandas_output2(output_):
+    item_id_lst = []
+    from_lst = []
+    to_lst = []
+    quantity_lst = []
+    order_id_lst = []
+    type_lst = []
+    employee_id_list = []
+    for e in output_:
+        for task in output_[e]:
+            if isinstance(task, TaskPick):
+                item_id_lst.append("")
+                from_lst.append("")
+                to_lst.append("")
+                quantity_lst.append(" ")
+                order_id_lst.append(task.id_)
+                type_lst.append("ליקוט")
+                employee_id_list.append(e)
+            else:
+                for gi in task.grouped_items:
+                    item_id_lst.append(gi.item_id)
+                    from_lst.append(gi.location.loc_str)
+                    to_lst.append("AA1")
+                    quantity_lst.append(gi.total_quantity)
+                    order_id_lst.append(" ")
+                    type_lst.append("העברה")
+                    employee_id_list.append(e)
+            item_id_lst.append("000")
+            from_lst.append("000")
+            to_lst.append("000")
+            quantity_lst.append("000")
+            order_id_lst.append("000")
+            type_lst.append("000")
+            employee_id_list.append("000")
+    d = {'מקט': item_id_lst, 'מאיתור': from_lst, 'לאיתור': to_lst, "כמות": quantity_lst, 'מספר הזמנה': order_id_lst,
+         "סוג": type_lst, "עובד": employee_id_list}
+    df = pd.DataFrame(data=d)
+    return df
+
 
 def get_orders_not_in_transfer(order_tasks):
     ans = []
@@ -336,19 +378,17 @@ def get_list_of_pick_ids_to_delete():
     return temp2_
 
 
-def get_task_by_id(id_to_delete,pick_tasks):
+def get_task_by_id(id_to_delete, pick_tasks):
     for task in pick_tasks:
         if task.id_ == id_to_delete:
             return task
-
-
 
 
 def remove_pick_tasks_that_are_finished(pick_tasks):
     list_of_pick_ids_to_delete = get_list_of_pick_ids_to_delete()
     to_remove = []
     for id_to_delete in list_of_pick_ids_to_delete:
-        the_task = get_task_by_id(id_to_delete,pick_tasks)
+        the_task = get_task_by_id(id_to_delete, pick_tasks)
         if the_task is None:
             print(id_to_delete, "was not found and was not deleted")
         else:
@@ -363,8 +403,12 @@ def remove_pick_tasks_that_are_finished(pick_tasks):
 def write_to_excel(employee_id, pd_output, first):
     if first:
         pd_output.to_excel("output.xlsx",
-                     sheet_name=employee_id, index=False)
+                           sheet_name=employee_id, index=False)
         return
 
-    with pd.ExcelWriter("output.xlsx",mode="a",engine="openpyxl") as writer:
-        pd_output.to_excel(writer, sheet_name=employee_id,index=False)
+    with pd.ExcelWriter("output.xlsx", mode="a", engine="openpyxl") as writer:
+        pd_output.to_excel(writer, sheet_name=employee_id, index=False)
+
+
+def write_to_excel2(pd_output):
+    pd_output.to_excel("output_tasks.xlsx", index=False)

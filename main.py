@@ -3,13 +3,9 @@ import pandas as pd
 from Entities import Line, GroupOfItem, TaskPick, GroupByIsle, TaskTransfer, Employee
 
 is_with_transfer_tasks = True
-orders_to_remove = []
 max_groups_per_task_transfer = 4
-max_transfer_task= 2
-max_volume=1.728
-
-
-
+max_transfer_task = 2
+max_volume = 1.728
 
 # def get_ailse_name(row):
 #     st = row['מאיתור']
@@ -20,7 +16,7 @@ from FisherV2 import FisherForUserV2
 from FunctionsForMain import read_input, create_employees, create_dict_of_items, create_files_by_date, choose_records, \
     create_lines, get_lines_by_order, get_lines_by_item, get_item_groups_by_aisle, mark_orders, \
     get_orders_not_in_transfer, create_numberOfIdsRatio, remove_pick_tasks_that_are_finished, gather_tasks, \
-    create_pandas_ourput, write_to_excel
+    create_pandas_output, write_to_excel, create_pandas_output2, write_to_excel2
 
 ####------------AGENTS DATA--------------------
 employees_data = read_input("employees.xlsx")
@@ -32,7 +28,7 @@ dic_items_with_volume = create_dict_of_items(items_input)
 # lines_input = read_input("input.xlsx")
 # create_files_by_date(lines_input)
 # print(lines_input.info)
-date = "2022-06-20"
+date = "2022-11-03"
 dir = "input_by_date/"
 lines_input = read_input(dir + "input_" + date + ".xlsx")
 # lines_input2 = choose_records(lines_input, field_name="תאריך", value=date)
@@ -49,7 +45,6 @@ if is_with_transfer_tasks:
                                               max_transfer_task=max_transfer_task, max_volume=max_volume)
 else:
     transfer_tasks = []
-
 
 pick_tasks = mark_orders(pick_tasks, transfer_tasks)
 pick_tasks = get_orders_not_in_transfer(pick_tasks)
@@ -69,6 +64,9 @@ schedule = fisher_user.schedule
 
 first = True
 for employee in schedule:
-    pd_output = create_pandas_ourput(schedule[employee])
-    write_to_excel(employee,pd_output,first)
+    pd_output = create_pandas_output(schedule[employee])
+    write_to_excel(employee, pd_output, first)
     first = False
+
+pd_output2 = create_pandas_output2(schedule)
+write_to_excel2(pd_output2)
